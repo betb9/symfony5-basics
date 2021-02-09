@@ -25,8 +25,15 @@ class QuestionController extends AbstractController {
      * @return Response
      */
     public function show($slug): Response {
+        $answers = [
+          'Make sure your cat is sitting perfectly still!',
+          'Honestly, I like furry shoes better than MY cat',
+          'Maybe... try saying the spell backwards?'
+        ];
+
         return $this->render('question/show.html.twig', [
-            'question'  => ucwords(str_replace('-', ' ', $slug))
+            'question'  => ucwords(str_replace('-', ' ', $slug)),
+            'answers'   => $answers
         ]);
     }
 
