@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Service\MarkdownHelper;
 use Psr\Cache\InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -14,7 +15,27 @@ use Twig\Error\SyntaxError;
 
 class QuestionController extends AbstractController
 {
-    /**
+	/**
+	 * @var LoggerInterface
+	 */
+	private $logger;
+	/**
+	 * @var bool
+	 */
+	private $isDebug;
+
+	/**
+	 * QuestionController constructor.
+	 * @param LoggerInterface $logger
+	 * @param bool $isDebug
+	 */
+	public function __construct(LoggerInterface $logger, bool $isDebug) {
+		$this->logger = $logger;
+		$this->isDebug = $isDebug;
+	}
+
+
+	/**
      * @Route("/", name="app_homepage")
      * @param Environment $twigEnvironment
      * @return Response
@@ -37,6 +58,8 @@ class QuestionController extends AbstractController
 	 */
     public function show($slug, MarkdownHelper $markdownHelper): Response
     {
+    	if($this->isDebug) $this->logger->info('We are in debug mode!');
+
         $answers = [
             'Make sure your cat is sitting `purrrfectly` still 🤣',
             'Honestly, I like furry shoes better than MY cat',
