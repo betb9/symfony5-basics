@@ -9,21 +9,15 @@ use Twig\TwigFunction;
 
 class MarkdownExtension extends AbstractExtension
 {
-	/**
-	 * @var MarkdownHelper
-	 */
-	private $markdownHelper;
+    private $markdownHelper;
 
+    public function __construct(MarkdownHelper $markdownHelper)
+    {
+        $this->markdownHelper = $markdownHelper;
+    }
 
-	/**
-	 * MarkdownExtension constructor.
-	 * @param MarkdownHelper $markdownHelper
-	 */
-	public function __construct(MarkdownHelper $markdownHelper) {
-		$this->markdownHelper = $markdownHelper;
-	}
-
-	public function getFilters(): array {
+    public function getFilters(): array
+    {
         return [
             // If your filter generates SAFE HTML, you should add a third
             // parameter: ['is_safe' => ['html']]
@@ -32,7 +26,8 @@ class MarkdownExtension extends AbstractExtension
         ];
     }
 
-    public function parseMarkdown($value) {
+    public function parseMarkdown($value)
+    {
         return $this->markdownHelper->parse($value);
     }
 }

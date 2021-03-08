@@ -13,26 +13,19 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class RandomSpellCommand extends Command
 {
     protected static $defaultName = 'app:random-spell';
-    protected static $defaultDescription = 'Cast a random spell!';
-	/**
-	 * @var LoggerInterface
-	 */
-	private $logger;
+    private $logger;
 
-	/**
-	 * RandomSpellCommand constructor.
-	 * @param LoggerInterface $logger
-	 */
-	public function __construct(LoggerInterface $logger) {
-		$this->logger = $logger;
-		parent::__construct();
-	}
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
 
+        parent::__construct();
+    }
 
-	protected function configure()
+    protected function configure()
     {
         $this
-            ->setDescription(self::$defaultDescription)
+            ->setDescription('Cast a random spell!')
             ->addArgument('your-name', InputArgument::OPTIONAL, 'Your name')
             ->addOption('yell', null, InputOption::VALUE_NONE, 'Yell?')
         ;
@@ -44,17 +37,17 @@ class RandomSpellCommand extends Command
         $yourName = $input->getArgument('your-name');
 
         if ($yourName) {
-            $io->note(sprintf('Hi %s', $yourName));
+            $io->note(sprintf('Hi %s!', $yourName));
         }
 
         $spells = [
-        	'alohomora',
-	        'confundo',
-	        'engorgio',
-	        'expecto patronum',
-	        'expelliarmus',
-	        'impedimenta',
-	        'reparo'
+            'alohomora',
+            'confundo',
+            'engorgio',
+            'expecto patronum',
+            'expelliarmus',
+            'impedimenta',
+            'reparo',
         ];
 
         $spell = $spells[array_rand($spells)];
@@ -63,7 +56,7 @@ class RandomSpellCommand extends Command
             $spell = strtoupper($spell);
         }
 
-        $this->logger->info('Casting spell: ' . $spell);
+        $this->logger->info('Casting spell: '.$spell);
 
         $io->success($spell);
 
