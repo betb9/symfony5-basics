@@ -53,14 +53,29 @@ class QuestionController extends AbstractController
 		$question->getId(), $question->getSlug()));
 	}
 
-    /**
-     * @Route("/questions/{slug}", name="app_question_show")
-     */
-    public function show($slug, MarkdownHelper $markdownHelper)
+	/**
+	 * @Route("/questions/{slug}", name="app_question_show")
+	 * @param $slug
+	 * @param MarkdownHelper $markdownHelper
+	 * @param EntityManagerInterface $entityManager
+	 * @return Response
+	 */
+    public function show($slug, MarkdownHelper $markdownHelper, EntityManagerInterface $entityManager)
     {
         if ($this->isDebug) {
             $this->logger->info('We are in debug mode!');
         }
+
+        $repository = $entityManager->getRepository(Question::class);
+	    /**
+	     * @var Question|null $question
+	     */
+        $question = $repository->findOneBy(['slug' => $slug]);
+        if(!$question) {
+        	throw $this->createNotFoundException(sprintf('no question found!'));
+        }
+
+        dd($question);
 
         $answers = [
             'Make sure your cat is sitting `purrrfectly` still 🤣',
