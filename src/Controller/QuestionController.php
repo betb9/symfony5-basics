@@ -2,77 +2,92 @@
 
 namespace App\Controller;
 
+use App\Entity\Question;
+use App\Repository\QuestionRepository;
 use App\Service\MarkdownHelper;
-use Psr\Cache\InvalidArgumentException;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 
 class QuestionController extends AbstractController
 {
-	/**
-	 * @var LoggerInterface
-	 */
-	private $logger;
-	/**
-	 * @var bool
-	 */
-	private $isDebug;
+    private $logger;
+    private $isDebug;
 
-	/**
-	 * QuestionController constructor.
-	 * @param LoggerInterface $logger
-	 * @param bool $isDebug
-	 */
-	public function __construct(LoggerInterface $logger, bool $isDebug) {
-		$this->logger = $logger;
-		$this->isDebug = $isDebug;
-	}
-
-
-	/**
-     * @Route("/", name="app_homepage")
-     * @param Environment $twigEnvironment
-     * @return Response
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
-    public function homepage(Environment $twigEnvironment): Response
+    public function __construct(LoggerInterface $logger, bool $isDebug)
     {
-        $html = $twigEnvironment->render('question/homepage.html.twig');
-        return new Response($html);
+        $this->logger = $logger;
+        $this->isDebug = $isDebug;
+    }
+
+
+    /**
+     * @Route("/", name="app_homepage")
+     */
+    public function homepage(QuestionRepository $repository)
+    {
+    	$questions = $repository->findAllAskedOrderByNewest();
+
+      return $this->render('question/homepage.html.twig', [
+      	'questions' => $questions
+      ]);
     }
 
 	/**
-	 * @Route("/questions/{slug}", name="app_question_show")
-	 * @param $slug
-	 * @param MarkdownHelper $markdownHelper
+	 * @Route("/questions/new")
+	 * @param EntityManagerInterface $entityManager
 	 * @return Response
-	 * @throws InvalidArgumentException
+	 * @throws \Exception
 	 */
-    public function show($slug, MarkdownHelper $markdownHelper): Response
+	public function new(EntityManagerInterface $entityManager) {
+		return new Response(sprintf('Sounds like a GREAT feature for v2'));
+	}
+
+	/**
+	 * @Route("/questions/{slug}", name="app_question_show")
+	 * @param Question $question
+	 * @return Response
+	 */
+    public function show(Question $question): Response
     {
-    	if($this->isDebug) $this->logger->info('We are in debug mode!');
+        if ($this->isDebug) {
+            $this->logger->info('We are in debug mode!');
+        }
 
         $answers = [
             'Make sure your cat is sitting `purrrfectly` still 🤣',
             'Honestly, I like furry shoes better than MY cat',
             'Maybe... try saying the spell backwards?',
         ];
-        $questionText = 'I\'ve been turned into a cat, any *thoughts* on how to turn back? While I\'m **adorable**, I don\'t really care for cat food.';
 
-        $parsedQuestionText = $markdownHelper->parse($questionText);
 
         return $this->render('question/show.html.twig', [
-            'question'      => ucwords(str_replace('-', ' ', $slug)),
-            'questionText'  => $parsedQuestionText,
-            'answers'       => $answers,
+            'question' => $question,
+            'answers' => $answers,
         ]);
+    }
+
+	/**
+	 * @Route("/questions/{slug}/vote", name="app_question_vote", methods="POST")
+	 * @param Question $question
+	 * @param Request $request
+	 * @param EntityManagerInterface $entityManager
+	 */
+    public function questionVote(Question $question, Request $request, EntityManagerInterface $entityManager): RedirectResponse
+    {
+			$direction = $request->request->get('direction');
+			if($direction === 'up') {
+				$question->upVotes();
+			} elseif($direction === 'down') {
+				$question->downVotes();
+			}
+			$entityManager->flush();
+			return $this->redirectToRoute('app_question_show', [
+				'slug' => $question->getSlug()
+			]);
     }
 }
