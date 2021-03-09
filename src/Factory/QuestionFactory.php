@@ -4,6 +4,7 @@ namespace App\Factory;
 
 use App\Entity\Question;
 use App\Repository\QuestionRepository;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 use Zenstruck\Foundry\RepositoryProxy;
 use Zenstruck\Foundry\ModelFactory;
 use Zenstruck\Foundry\Proxy;
@@ -33,13 +34,19 @@ final class QuestionFactory extends ModelFactory
         // TODO inject services if required (https://github.com/zenstruck/foundry#factories-as-services)
     }
 
+    public function unpublished(): self {
+    	return $this->addState(['askedAt' => null]);
+    }
+
     protected function getDefaults(): array
     {
         return [
-        	'name'      => 'Missing pants',
-	        'slug'      => 'missing-pants-'.rand(0, 1000),
-	        'question'  => 'Hi, I\'m having a *weird* day. Does anyone have a spell to call your pants back?',
-	        'askedAt'   => rand(1, 10) > 2 ? new \DateTime(sprintf('-%d days', rand(1, 100))) : null,
+        	'name'      => self::faker()->realText(50),
+	        'question'  => self::faker()->paragraphs(
+	        	self::faker()->numberBetween(1, 4),
+		        true
+	        ),
+	        'askedAt'   => self::faker()->dateTimeBetween('-100 days', '-1 minute'),
 	        'votes'     => rand(-20, 50)
         ];
     }
@@ -48,7 +55,12 @@ final class QuestionFactory extends ModelFactory
     {
         // see https://github.com/zenstruck/foundry#initialization
         return $this
-            // ->afterInstantiate(function(Question $question) {})
+            ->afterInstantiate(function(Question $question) {
+            	if(!$question->getSlug()) {
+            		$slugger = new AsciiSlugger();
+            		$question->setSlug($slugger->slug($question->getName()));
+	            }
+            })
         ;
     }
 
