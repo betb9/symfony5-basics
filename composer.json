@@ -1,5 +1,4 @@
 {
-    "name": "cauldron",
     "description": "",
     "type": "project",
     "license": "proprietary",
@@ -12,6 +11,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "doctrine/orm": "^2.7",
         "knplabs/knp-markdown-bundle": "^1.8",
+        "knplabs/knp-time-bundle": "^1.16",
         "nyholm/psr7": "^1.4",
         "sensio/framework-extra-bundle": "^5.5",
         "sentry/sentry-symfony": "^4.0",
